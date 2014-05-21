@@ -1,35 +1,63 @@
 #!/bin/bash
 usage(){
-    echo "#################################################################################"
+    echo "#########################################################################################################"
     echo "#"
     echo "# tmux-multiple"
     echo "# Author: Mehmet Ali ERGUT"
     echo "# E-mail: mim@taximact.com"
-    echo "# https://github.com/taximact/tmux-multiple"
+    echo "# https://github.com/memnuniyetsizim/tmux-multiple"
     echo "#"
-    echo "#  Yo! you need to send your arguments in a quoted way"
+    echo "#  This script can be used for example multi redis connections, multi database queries etc"
+    echo "#  Yo! you need to send your arguments with a semicolon."
+    echo "#  Without a command it will not work."
+    echo "#  To use different panes, use different session names."
+    echo "#  Command option (-c) is optional"
+    echo "#"
+    echo "#"
     echo "#  -t for session title"
     echo "#  -c for the command what you want to call"
     echo "#  -m parameter list with seperated with space for every pane"
     echo "#  -g send command to all open panes"
+    echo "#  -p parameters to run"
     echo "#"
     echo "#  SAMPLE: "
     echo "#  with synchronized-panes"
-    echo "#  bash tmux-multi.sh -g -t \"CheckMultipleFiles\" -c \"vim\" -p \"/etc/nginx/fastcgi_params /etc/hosts /etc/nginx/nginx.conf\""
+    echo "#  bash tmux-multi.sh -g -t \"editFiles\" -c \"vim\" -p \"/etc/nginx/fastcgi_params;/etc/hosts\""
     echo "#"
-    echo "# without synchronization"
-    echo "#  bash tmux-multi.sh -t \"CheckMultipleFiles\" -c \"vim\" -p \"/etc/nginx/fastcgi_params /etc/hosts /etc/nginx/nginx.conf\""    
+    echo "#  without synchronization"
+    echo "#  bash tmux-multi.sh -t \"editFiles\" -c \"vim\" -p \"/etc/nginx/fastcgi_params;/etc/hosts\""    
     echo "#"
-    echo "#################################################################################"
+    echo "#########################################################################################################"
 }
 
+install (){
+    if [ -z "$linkfile" ]; then
+        echo -n "Please enter name for link file"
+        read linkfile
+    fi
+
+    if [ -z "$linkpath" ]; then
+        echo -n "Please enter fullpath where you want to link file"
+        echo -n "Ex: /usr/local/bin"
+        read linkpath
+    fi
+
+    CURPATH=`pwd`
+    sudo ln -s "$CURPATH/tmux-multiple.sh" "$linkpath/$linkfile"
+    sudo chmod +x "$linkpath/$linkfile"
+    echo "Link file created at $linkpath/$linkfile"
+}
 
 pages=  length=  time=
 
-while getopts g?:t:c:p:h: opt; do
+while getopts h:t:c:p:g?:i: opt; do
   case $opt in
     h|help|\?)
         usage
+        exit 0
+        ;;
+    i|install)
+        install
         exit 0
         ;;
     g)  
@@ -53,14 +81,12 @@ shift $((OPTIND - 1))
 BNAME=`basename $0`
 sessionname='$sessiontitle'
 
-echo "command = $runcommand, parameters = $parameters"
-
 if [ -z "$sessionname" ]; then
     echo -n "Please enter a session name without spaces"
     read sessionname
 fi
 if [ -z "$parameters" ]; then
-   echo -n "Please provide of list of parameters separated by spaces [ENTER]: "
+   echo -n "Please provide of list of parameters separated by semicolon [ENTER]: "
    read parameters
 fi
  
@@ -70,10 +96,15 @@ else
   tmux new-session -d -s $sessionname
 fi
 
+export IFS=";"
 for i in $parameters
 do
-tmux split-window -v -t $sessionname "$runcommand $i"
-tmux select-layout tiled
+    if [ -z $runcommand ]; then
+        tmux split-window -v -t $sessionname "$i"
+    else
+        tmux split-window -v -t $sessionname "$runcommand $i"
+    fi
+    tmux select-layout tiled
 done
 
 if [ "$sync" != "" ]; then
