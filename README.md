@@ -15,16 +15,35 @@ Command (-c) is optional
 -m parameter list with seperated with space for every pane
 -g send command to all open panes
 -p parameters to run
+-i for install the script with tmux configuration
+
+To install:
+
+```bash
+
+$ ./tmux-multi.sh -install
+
+```
+
+Installation will need a path for symlink and gonna install a .tmux.conf file to your home folder.
 
 Sample usage: 
 
 with synchronized-panes
 
-./tmux-multi.sh -g -t "editFiles" -c "vim" -p "/etc/nginx/fastcgi_params;/etc/hosts"
+```bash
+
+$ ./tmux-multi.sh -g -t "editFiles" -c "vim" -p "/etc/nginx/fastcgi_params;/etc/hosts"
+
+```
 
 without synchronization
 
+```bash
+
 ./tmux-multi.sh -t "editFiles" -c "vim" -p "/etc/nginx/fastcgi_params;/etc/hosts"
+
+```
 
 Thanks to 
 http://linuxpixies.blogspot.jp/2011/06/tmux-copy-mode-and-how-to-control.html

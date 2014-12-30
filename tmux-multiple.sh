@@ -18,6 +18,7 @@ usage(){
     echo "#  -m parameter list with seperated with space for every pane"
     echo "#  -g send command to all open panes"
     echo "#  -p parameters to run"
+    echo "#  -i for install the script with tmux configuration"
     echo "#"
     echo "#  SAMPLE: "
     echo "#  with synchronized-panes"
@@ -45,6 +46,9 @@ install (){
     sudo ln -s "$CURPATH/tmux-multiple.sh" "$linkpath/$linkfile"
     sudo chmod +x "$linkpath/$linkfile"
     echo "Link file created at $linkpath/$linkfile"
+    "set-option -g mouse-select-pane on
+     set-option -g mouse-select-window on
+     set-window-option -g mode-mouse on" >> ~/.tmux.conf
 }
 
 pages=  length=  time=
@@ -103,7 +107,6 @@ do
     else
         tmux split-window -v -t $sessionname "$runcommand $i"
     fi
-    tmux select-layout tiled
 done
 
 if [ "$sync" != "" ]; then
@@ -112,4 +115,6 @@ else
     tmux set-window-option synchronize-panes off
 fi
 
+tmux kill-pane -t 0
+tmux select-layout tiled
 tmux attach -t $sessionname
