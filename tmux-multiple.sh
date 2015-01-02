@@ -107,6 +107,7 @@ do
     else
         tmux split-window -v -t $sessionname "$runcommand $i"
     fi
+    tmux select-layout tiled
 done
 
 if [ "$sync" != "" ]; then
